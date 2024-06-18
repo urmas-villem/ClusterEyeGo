@@ -25,6 +25,7 @@ var repositoryMap = map[string]string{
 	"opentelemetry-collector": "open-telemetry/opentelemetry-collector-contrib",
 	"prometheus":              "prometheus/prometheus",
 	"tempo":                   "grafana/tempo",
+	"jenkins":                 "jenkinsci/jenkins",
 }
 
 func FetchLatestVersion(repo string) (string, error) {
