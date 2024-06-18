@@ -1,12 +1,9 @@
-# Build Stage
-FROM golang:1.22.4-alpine as builder
-WORKDIR /work/
-COPY ./src/ ./
-RUN go env -w GO111MODULE=off && CGO_ENABLED=0 GOOS=linux go build -o /clustereye
 
-# Final Stage
 FROM golang:1.22.4-alpine
 WORKDIR /app
-COPY --from=builder /work/clustereye .
+COPY ./src/ ./
+RUN go env -w GO111MODULE=off && \
+    CGO_ENABLED=0 GOOS=linux go build -o clustereye
 RUN apk add --no-cache curl
-CMD ["/app/clustereye"]
+
+CMD ["./clustereye"]
