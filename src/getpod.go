@@ -26,23 +26,25 @@ func GetPodInfo() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+
+	softwareImages := make(map[string]map[string]bool)
+	for _, filter := range softwareFilters {
+		softwareImages[filter] = make(map[string]bool)
+	}
 
 	for _, pod := range pods.Items {
-		if containsAny(pod.Name, softwareFilters) {
-			fmt.Printf("Pod Name: %s\n", pod.Name)
-			for _, container := range pod.Spec.Containers {
-				fmt.Printf("  Container Name: %s, Image: %s\n", container.Name, container.Image)
+		for _, filter := range softwareFilters {
+			if strings.Contains(pod.Name, filter) {
+				for _, container := range pod.Spec.Containers {
+					softwareImages[filter][container.Image] = true
+				}
 			}
 		}
 	}
-}
-
-func containsAny(podName string, filters []string) bool {
-	for _, filter := range filters {
-		if strings.Contains(podName, filter) {
-			return true
+	for filter, images := range softwareImages {
+		fmt.Printf("%s:\n", filter)
+		for image := range images {
+			fmt.Println("  " + image)
 		}
 	}
-	return false
 }
