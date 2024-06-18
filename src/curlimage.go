@@ -9,12 +9,22 @@ import (
 )
 
 var repositoryMap = map[string]string{
-	"argocd":       "argoproj/argo-cd",
-	"jenkins":      "jenkinsci/jenkins",
-	"prometheus":   "prometheus/prometheus",
-	"alertmanager": "prometheus/alertmanager",
-	"clustereye":   "huxlee/clustereye",
-	"logstash":     "elastic/logstash",
+	"argocd":                  "argoproj/argo-cd",
+	"harbor":                  "goharbor/harbor",
+	"istio":                   "istio/istio",
+	"kiali":                   "kiali/kiali",
+	"kube-state-metrics":      "kubernetes/kube-state-metrics",
+	"sealed-secrets":          "bitnami-labs/sealed-secrets",
+	"alertmanager":            "prometheus/alertmanager",
+	"blackbox_exporter":       "prometheus/blackbox_exporter",
+	"kafka_exporter":          "danielqsj/kafka_exporter",
+	"loki":                    "grafana/loki",
+	"mimir":                   "grafana/mimir",
+	"node_exporter":           "prometheus/node_exporter",
+	"opensearch-dashboards":   "opensearch-project/OpenSearch-Dashboards",
+	"opentelemetry-collector": "open-telemetry/opentelemetry-collector-contrib",
+	"prometheus":              "prometheus/prometheus",
+	"tempo":                   "grafana/tempo",
 }
 
 func FetchLatestVersion(repo string) (string, error) {
