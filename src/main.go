@@ -7,12 +7,16 @@ import (
 
 type Software struct {
 	Name   string
-	Images map[string]bool
+	Images map[string]string
 }
 
 func main() {
 	for {
-		softwares := GetPodInfo()
+		softwares, err := GetPodInfo()
+		if err != nil {
+			fmt.Printf("Error fetching pod information: %v\n", err)
+			continue
+		}
 		PrintResults(softwares)
 		time.Sleep(3600 * time.Second)
 	}
@@ -21,8 +25,9 @@ func main() {
 func PrintResults(softwares map[string]*Software) {
 	for _, software := range softwares {
 		fmt.Printf("%s:\n", software.Name)
-		for image := range software.Images {
-			fmt.Printf("  %s\n", image)
+		for repo, version := range software.Images {
+			fmt.Printf("  repository: %s\n", repo)
+			fmt.Printf("  image-version: %s\n", version)
 		}
 	}
 }
