@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +11,7 @@ import (
 
 var softwareFilters = []string{"argocd", "jenkins", "prometheus", "alertmanager", "clustereye", "logstash"}
 
-func GetPodInfo() {
+func GetPodInfo() map[string]*Software {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
@@ -27,9 +26,9 @@ func GetPodInfo() {
 		panic(err.Error())
 	}
 
-	softwareImages := make(map[string]map[string]bool)
+	softwares := make(map[string]*Software)
 	for _, filter := range softwareFilters {
-		softwareImages[filter] = make(map[string]bool)
+		softwares[filter] = &Software{Name: filter, Images: make(map[string]bool)}
 	}
 
 	for _, pod := range pods.Items {
@@ -37,17 +36,12 @@ func GetPodInfo() {
 			if strings.Contains(pod.Name, filter) {
 				for _, container := range pod.Spec.Containers {
 					if strings.Contains(container.Image, filter) {
-						softwareImages[filter][container.Image] = true
+						softwares[filter].Images[container.Image] = true
 					}
 				}
 			}
 		}
 	}
 
-	for filter, images := range softwareImages {
-		fmt.Printf("%s:\n", filter)
-		for image := range images {
-			fmt.Println("  " + image)
-		}
-	}
+	return softwares
 }
