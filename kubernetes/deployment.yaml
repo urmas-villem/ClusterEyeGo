@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clustereye
+  labels:
+    app: clustereye
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clustereye
+  template:
+    metadata:
+      labels:
+        app: clustereye
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9191"
+    spec:
+      serviceAccountName: clustereye
+      containers:
+      - name: clustereye
+        image: huxlee/clustereye:latest
+        ports:
+        - containerPort: 9191
+        envFrom:
+        - configMapRef:
+            name: clustereye-config
+#        env:
+#        - name: SLACK_WEBHOOK_URL
+#          valueFrom:
+#            secretKeyRef:
+#              name: slack-webhook-secret
+#              key: SLACK_WEBHOOK_URL
