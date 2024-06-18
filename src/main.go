@@ -5,15 +5,24 @@ import (
 	"time"
 )
 
+type Software struct {
+	Name   string
+	Images map[string]bool
+}
+
 func main() {
 	for {
-		results := GetPodInfo()
-		for software, images := range results {
-			fmt.Printf("%s:\n", software)
-			for _, image := range images {
-				fmt.Printf("  %s\n", image)
-			}
-		}
+		softwares := GetPodInfo()
+		PrintResults(softwares)
 		time.Sleep(3600 * time.Second)
+	}
+}
+
+func PrintResults(softwares map[string]*Software) {
+	for _, software := range softwares {
+		fmt.Printf("%s:\n", software.Name)
+		for image := range software.Images {
+			fmt.Printf("  %s\n", image)
+		}
 	}
 }
