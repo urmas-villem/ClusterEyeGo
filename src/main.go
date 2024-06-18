@@ -30,6 +30,14 @@ func main() {
 		}
 		fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 
+		// Iterate over each pod and their containers to list all images
+		fmt.Println("Images used by the pods:")
+		for _, pod := range pods.Items {
+			for _, container := range pod.Spec.Containers {
+				fmt.Println(container.Image) // Print each container's image
+			}
+		}
+
 		time.Sleep(10 * time.Second)
 	}
 }
