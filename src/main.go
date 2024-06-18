@@ -6,8 +6,9 @@ import (
 )
 
 type Software struct {
-	Name   string
-	Images map[string]string
+	Name       string
+	Images     map[string]string
+	ImageFound string
 }
 
 func main() {
@@ -17,6 +18,8 @@ func main() {
 			fmt.Printf("Error fetching pod information: %v\n", err)
 			continue
 		}
+
+		UpdateSoftwareVersions(softwares)
 		PrintResults(softwares)
 		time.Sleep(3600 * time.Second)
 	}
@@ -27,7 +30,8 @@ func PrintResults(softwares map[string]*Software) {
 		fmt.Printf("%s:\n", software.Name)
 		for repo, version := range software.Images {
 			fmt.Printf("  repository: %s\n", repo)
-			fmt.Printf("  image-version: %s\n", version)
+			fmt.Printf("  image-used: %s\n", version)
+			fmt.Printf("  image-found: %s\n", software.ImageFound)
 		}
 	}
 }
