@@ -36,11 +36,14 @@ func GetPodInfo() {
 		for _, filter := range softwareFilters {
 			if strings.Contains(pod.Name, filter) {
 				for _, container := range pod.Spec.Containers {
-					softwareImages[filter][container.Image] = true
+					if strings.Contains(container.Image, filter) {
+						softwareImages[filter][container.Image] = true
+					}
 				}
 			}
 		}
 	}
+
 	for filter, images := range softwareImages {
 		fmt.Printf("%s:\n", filter)
 		for image := range images {
