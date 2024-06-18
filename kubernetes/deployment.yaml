@@ -24,9 +24,9 @@ spec:
         image: huxlee/clustereye:latest
         ports:
         - containerPort: 9191
-        envFrom:
-        - configMapRef:
-            name: clustereye-config
+#        envFrom:
+#        - configMapRef:
+#            name: clustereye-config
 #        env:
 #        - name: SLACK_WEBHOOK_URL
 #          valueFrom:
