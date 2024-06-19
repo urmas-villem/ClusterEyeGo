@@ -63,7 +63,7 @@ func main() {
 	}
 
 	for {
-		softwares, err := GetPodInfo()
+		softwares, err := GetPodInfo(repoConfig)
 		if err != nil {
 			fmt.Printf("Error fetching pod information: %v\n", err)
 			continue
