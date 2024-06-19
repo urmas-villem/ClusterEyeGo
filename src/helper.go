@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,10 +62,10 @@ func getConfigMap(clientset *kubernetes.Clientset, name, namespace string) (map[
 }
 
 func sanityCheckGithub() bool {
-	url := "https://api.github.com/repos/argoproj/argo-cd/releases"
+	url := "https://api.github.com/rate_limit"
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("Failed to check GitHub rate limit: %v\n", err)
+		log.Printf("Failed to check GitHub rate limits: %v\n", err)
 		return false
 	}
 	defer resp.Body.Close()
@@ -76,24 +76,29 @@ func sanityCheckGithub() bool {
 		return false
 	}
 
-	var apiResponse map[string]interface{}
-	if err := json.Unmarshal(body, &apiResponse); err != nil {
-		log.Printf("Error unmarshalling GitHub response: %v\n", err)
+	var rateLimitInfo struct {
+		Resources struct {
+			Core struct {
+				Limit     int   `json:"limit"`
+				Remaining int   `json:"remaining"`
+				Reset     int64 `json:"reset"`
+			} `json:"core"`
+		} `json:"resources"`
+	}
+
+	if err := json.Unmarshal(body, &rateLimitInfo); err != nil {
+		log.Printf("Error unmarshalling GitHub rate limit response: %v\n", err)
 		log.Printf("Raw GitHub API response: %s\n", string(body))
 		return false
 	}
 
-	if message, exists := apiResponse["message"].(string); exists {
-		log.Printf("GitHub API Response: %s\n", message)
-		if strings.Contains(message, "API rate limit exceeded") {
-			log.Println("GitHub API hourly limit reached, try again later.")
-			return true
-		}
-	} else {
-		log.Printf("No 'message' field in GitHub API response. Full response: %s\n", string(body))
+	if rateLimitInfo.Resources.Core.Remaining == 0 {
+		resetTime := time.Unix(rateLimitInfo.Resources.Core.Reset, 0)
+		remainingTime := time.Until(resetTime).Round(time.Minute)
+		log.Printf("GitHub API core rate limit exceeded. Resets in %v", remainingTime)
+		return true
 	}
 
-	log.Printf("GitHub API response summary: %s\n", string(body))
-
+	log.Println("GitHub API core rate limit check passed.")
 	return false
 }
