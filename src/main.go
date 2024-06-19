@@ -32,7 +32,6 @@ var (
 )
 
 func init() {
-	// Register custom metrics with Prometheus's default registry
 	prometheus.MustRegister(softwareInfo)
 }
 
@@ -46,7 +45,6 @@ func PrintResults(softwares map[string]*Software) {
 				fmt.Printf("  current-version: %s\n", currentVersion)
 				fmt.Printf("  latest-version: %s\n", software.LatestVersion)
 
-				// Update Prometheus metrics
 				softwareInfo.WithLabelValues(software.Name, repo, currentVersion, software.LatestVersion).Set(1)
 			}
 		}
@@ -86,7 +84,6 @@ func main() {
 		panic(err.Error())
 	}
 
-	// Set up HTTP server and metrics endpoint
 	http.Handle("/metrics", promhttp.Handler())
 	go func() {
 		log.Fatal(http.ListenAndServe(":9191", nil))
