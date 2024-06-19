@@ -29,7 +29,7 @@ func GetPodInfo() (map[string]*Software, error) {
 
 	softwares := make(map[string]*Software)
 	for _, filter := range softwareFilters {
-		softwares[filter] = &Software{Name: filter, Images: make(map[string]string)}
+		softwares[filter] = &Software{Name: filter, Repositories: make(map[string]string)}
 	}
 
 	for _, pod := range pods.Items {
@@ -43,7 +43,7 @@ func GetPodInfo() (map[string]*Software, error) {
 						}
 						repository := parts[0]
 						version := parts[1]
-						softwares[filter].Images[repository] = version
+						softwares[filter].Repositories[repository] = version
 					}
 				}
 			}

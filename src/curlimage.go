@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
+	"sort"
 	"strings"
 )
 
-var repositoryMap = map[string]string{
+var repositoryMapGithub = map[string]string{
 	"argocd":                  "argoproj/argo-cd",
 	"harbor":                  "goharbor/harbor",
 	"istio":                   "istio/istio",
@@ -28,7 +30,12 @@ var repositoryMap = map[string]string{
 	"jenkins":                 "jenkinsci/jenkins",
 }
 
-func FetchLatestVersion(repo string) (string, error) {
+var repositoryMapElastic = map[string]string{
+	"filebeat":     "beats/filebeat",
+	"logstash-oss": "logstash/logstash-oss",
+}
+
+func FetchLatestVersionGithub(repo string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", repo)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -61,20 +68,64 @@ func FetchLatestVersion(repo string) (string, error) {
 	return "", fmt.Errorf("no suitable release found for %s", repo)
 }
 
+func FetchLatestVersionElastic(repoKey string) (string, error) {
+	basePath := "https://www.docker.elastic.co/r/"
+	repo, exists := repositoryMapElastic[repoKey]
+	if !exists {
+		return "", fmt.Errorf("repository key not found for %s", repoKey)
+	}
+
+	url := basePath + repo
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	re := regexp.MustCompile(repoKey + `:([0-9]+\.[0-9]+\.[0-9]+)`)
+	matches := re.FindAllStringSubmatch(string(body), -1)
+
+	var versions []string
+	for _, match := range matches {
+		versions = append(versions, match[1])
+	}
+
+	if len(versions) == 0 {
+		return "", fmt.Errorf("no versions found at %s", url)
+	}
+
+	sort.Slice(versions, func(i, j int) bool {
+		return versions[i] > versions[j]
+	})
+
+	return versions[0], nil
+}
+
 func UpdateSoftwareVersions(softwares map[string]*Software) {
 	for name, software := range softwares {
-		repo, exists := repositoryMap[name]
-		if !exists {
+		var version string
+		var err error
+
+		if _, exists := repositoryMapGithub[name]; exists {
+			version, err = FetchLatestVersionGithub(name)
+		} else if _, exists := repositoryMapElastic[name]; exists {
+			version, err = FetchLatestVersionElastic(name)
+		} else {
 			fmt.Printf("Repository not found for software: %s\n", name)
 			continue
 		}
 
-		version, err := FetchLatestVersion(repo)
 		if err != nil {
 			fmt.Println("Error fetching latest version for", name, ":", err)
 			continue
 		}
 
-		software.ImageFound = version
+		software.LatestVersion = version
 	}
 }

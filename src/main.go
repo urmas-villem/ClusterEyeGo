@@ -6,18 +6,18 @@ import (
 )
 
 type Software struct {
-	Name       string
-	Images     map[string]string
-	ImageFound string
+	Name          string
+	Repositories  map[string]string
+	LatestVersion string
 }
 
 func PrintResults(softwares map[string]*Software) {
 	for _, software := range softwares {
 		fmt.Printf("%s:\n", software.Name)
-		for repo, version := range software.Images {
+		for repo, currentVersion := range software.Repositories {
 			fmt.Printf("  repository: %s\n", repo)
-			fmt.Printf("  image-used: %s\n", version)
-			fmt.Printf("  image-found: %s\n", software.ImageFound)
+			fmt.Printf("  current-version: %s\n", currentVersion)
+			fmt.Printf("  latest-version: %s\n", software.LatestVersion)
 		}
 	}
 }
