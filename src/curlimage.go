@@ -31,8 +31,8 @@ var repositoryMapGithub = map[string]string{
 }
 
 var repositoryMapElastic = map[string]string{
-	"filebeat":     "beats/filebeat",
-	"logstash-oss": "logstash/logstash-oss",
+	"filebeat": "beats/filebeat",
+	"logstash": "logstash/logstash-oss",
 }
 
 func FetchLatestVersionGithub(repo string) (string, error) {
