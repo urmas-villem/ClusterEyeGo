@@ -2,7 +2,7 @@
 https://hub.docker.com/r/huxlee/clustereye   
 
 #### Run the application on kubernetes
-### Deployment option 1 (windows environment)
+### Deployment (windows environment)
 ## Prerequisites:
 - [ArgoCD cli](https://argo-cd.readthedocs.io/en/stable/cli_installation/)
 - [Helm](https://helm.sh/docs/intro/install/)
