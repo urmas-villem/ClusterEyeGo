@@ -93,6 +93,19 @@ func UpdateSoftwareVersions(softwares map[string]*Software, repositoryMapGithub,
 			continue
 		}
 
-		software.LatestVersion = version
+		if software.LatestVersions == nil {
+			software.LatestVersions = []string{version}
+		} else {
+			var found bool
+			for _, v := range software.LatestVersions {
+				if v == version {
+					found = true
+					break
+				}
+			}
+			if !found {
+				software.LatestVersions = append(software.LatestVersions, version)
+			}
+		}
 	}
 }

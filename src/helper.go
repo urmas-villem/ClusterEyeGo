@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,9 +16,9 @@ import (
 )
 
 type Software struct {
-	Name          string
-	Repositories  map[string]string
-	LatestVersion string
+	Name           string
+	Repositories   map[string]string
+	LatestVersions []string
 }
 
 func PrintResults(softwares map[string]*Software, softwareInfo *prometheus.GaugeVec) {
@@ -29,10 +30,10 @@ func PrintResults(softwares map[string]*Software, softwareInfo *prometheus.Gauge
 			fmt.Printf("%s:\n", software.Name)
 			for repo, currentVersion := range software.Repositories {
 				fmt.Printf("  repository: %s\n", repo)
-				fmt.Printf("  current-version: %s\n", currentVersion)
-				fmt.Printf("  latest-version: %s\n", software.LatestVersion)
-
-				softwareInfo.WithLabelValues(software.Name, repo, currentVersion, software.LatestVersion).Set(1)
+				fmt.Printf("  versions: %v\n", strings.Join(software.LatestVersions, ", "))
+				for _, ver := range software.LatestVersions {
+					softwareInfo.WithLabelValues(software.Name, repo, currentVersion, ver).Set(1)
+				}
 			}
 		}
 	}
