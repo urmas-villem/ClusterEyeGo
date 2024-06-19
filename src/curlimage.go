@@ -48,6 +48,8 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 		return "", err
 	}
 
+	fmt.Println("DEBUG: Raw JSON response:", string(body))
+
 	var releases []map[string]interface{}
 	err = json.Unmarshal(body, &releases)
 	if err != nil {
@@ -88,12 +90,16 @@ func FetchLatestVersionElastic(repoKey string) (string, error) {
 		return "", err
 	}
 
+	fmt.Println("DEBUG: Raw Response Body:", string(body))
+
 	re := regexp.MustCompile(repoKey + `:([0-9]+\.[0-9]+\.[0-9]+)`)
 	matches := re.FindAllStringSubmatch(string(body), -1)
 
 	var versions []string
 	for _, match := range matches {
-		versions = append(versions, match[1])
+		if len(match) > 1 {
+			versions = append(versions, match[1])
+		}
 	}
 
 	if len(versions) == 0 {
