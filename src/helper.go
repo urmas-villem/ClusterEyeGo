@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,16 +76,24 @@ func sanityCheckGithub() bool {
 		return false
 	}
 
-	var apiResponse []map[string]interface{}
+	var apiResponse map[string]interface{}
 	if err := json.Unmarshal(body, &apiResponse); err != nil {
 		log.Printf("Error unmarshalling GitHub response: %v\n", err)
+		log.Printf("Raw GitHub API response: %s\n", string(body))
 		return false
 	}
 
-	if len(apiResponse) == 0 {
-		log.Println("No data received from GitHub, possibly hit the rate limit.")
-		return true
+	if message, exists := apiResponse["message"].(string); exists {
+		log.Printf("GitHub API Response: %s\n", message)
+		if strings.Contains(message, "API rate limit exceeded") {
+			log.Println("GitHub API hourly limit reached, try again later.")
+			return true
+		}
+	} else {
+		log.Printf("No 'message' field in GitHub API response. Full response: %s\n", string(body))
 	}
+
+	log.Printf("GitHub API response summary: %s\n", string(body))
 
 	return false
 }
