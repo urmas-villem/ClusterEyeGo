@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +36,15 @@ func getConfigMap(clientset *kubernetes.Clientset, name, namespace string) (map[
 	return cm.Data, nil
 }
 
+func parseRepositoryMaps(data string) (map[string]string, error) {
+	var result map[string]string
+	err := json.Unmarshal([]byte(data), &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func main() {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -52,18 +61,20 @@ func main() {
 		return
 	}
 
-	repositoryMapGithub := make(map[string]string)
-	repositoryMapElastic := make(map[string]string)
-	for key, value := range repoConfig {
-		if strings.HasPrefix(key, "github-") {
-			repositoryMapGithub[strings.TrimPrefix(key, "github-")] = value
-		} else if strings.HasPrefix(key, "elastic-") {
-			repositoryMapElastic[strings.TrimPrefix(key, "elastic-")] = value
-		}
+	repositoryMapGithub, err := parseRepositoryMaps(repoConfig["github_search"])
+	if err != nil {
+		fmt.Println("Failed to parse GitHub repositories:", err)
+		return
+	}
+
+	repositoryMapElastic, err := parseRepositoryMaps(repoConfig["elastic_search"])
+	if err != nil {
+		fmt.Println("Failed to parse Elastic repositories:", err)
+		return
 	}
 
 	for {
-		softwares, err := GetPodInfo(repoConfig)
+		softwares, err := GetPodInfo(repositoryMapGithub)
 		if err != nil {
 			fmt.Printf("Error fetching pod information: %v\n", err)
 			continue
