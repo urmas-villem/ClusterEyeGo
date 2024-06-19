@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -17,6 +21,21 @@ type Software struct {
 	LatestVersion string
 }
 
+var (
+	softwareInfo = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "software_info",
+			Help: "Information about software found in the cluster.",
+		},
+		[]string{"software_name", "image_repository", "image_version", "newest_image"},
+	)
+)
+
+func init() {
+	// Register custom metrics with Prometheus's default registry
+	prometheus.MustRegister(softwareInfo)
+}
+
 func PrintResults(softwares map[string]*Software) {
 	fmt.Println("Software found on the cluster:")
 	for _, software := range softwares {
@@ -26,6 +45,9 @@ func PrintResults(softwares map[string]*Software) {
 				fmt.Printf("  repository: %s\n", repo)
 				fmt.Printf("  current-version: %s\n", currentVersion)
 				fmt.Printf("  latest-version: %s\n", software.LatestVersion)
+
+				// Update Prometheus metrics
+				softwareInfo.WithLabelValues(software.Name, repo, currentVersion, software.LatestVersion).Set(1)
 			}
 		}
 	}
@@ -63,6 +85,12 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	// Set up HTTP server and metrics endpoint
+	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Fatal(http.ListenAndServe(":9191", nil))
+	}()
 
 	repoConfig, err := getConfigMap(clientset, "clustereye-config", "default")
 	if err != nil {
