@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,33 +55,4 @@ func getConfigMap(clientset *kubernetes.Clientset, name, namespace string) (map[
 		configData[key] = result
 	}
 	return configData, nil
-}
-
-func sanityCheckGithub() bool {
-	url := "https://api.github.com/repos/argoproj/argo-cd/releases"
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Printf("Failed to check GitHub rate limit: %v\n", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Failed to read response body: %v\n", err)
-		return false
-	}
-
-	var apiResponse []map[string]interface{}
-	if err := json.Unmarshal(body, &apiResponse); err != nil {
-		log.Printf("Error unmarshalling GitHub response: %v\n", err)
-		return false
-	}
-
-	if len(apiResponse) == 0 {
-		log.Println("No data received from GitHub, possibly hit the rate limit.")
-		return true
-	}
-
-	return false
 }

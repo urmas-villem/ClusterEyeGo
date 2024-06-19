@@ -42,11 +42,6 @@ func main() {
 		log.Fatal(http.ListenAndServe(":9191", nil))
 	}()
 
-	for sanityCheckGithub() {
-		log.Println("Retrying in 10 minutes...")
-		time.Sleep(10 * time.Minute)
-	}
-
 	repoConfig, err := getConfigMap(clientset, "clustereye-config", "default")
 	if err != nil {
 		log.Println("Failed to get config map:", err)
