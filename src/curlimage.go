@@ -24,17 +24,13 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 	}
 
 	var releases []map[string]interface{}
-	err = json.Unmarshal(body, &releases)
-	if err != nil {
+	if err := json.Unmarshal(body, &releases); err != nil {
 		return "", err
 	}
 
 	for _, release := range releases {
 		tagName, ok := release["tag_name"].(string)
-		if !ok {
-			continue
-		}
-		if strings.Contains(tagName, "beta") || strings.Contains(tagName, "rc") || strings.Contains(tagName, "alpha") {
+		if !ok || strings.Contains(tagName, "beta") || strings.Contains(tagName, "rc") || strings.Contains(tagName, "alpha") {
 			continue
 		}
 		return tagName, nil

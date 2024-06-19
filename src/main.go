@@ -28,21 +28,20 @@ func PrintResults(softwares map[string]*Software) {
 	}
 }
 
-func getConfigMap(clientset *kubernetes.Clientset, name, namespace string) (map[string]string, error) {
+func getConfigMap(clientset *kubernetes.Clientset, name, namespace string) (map[string]map[string]string, error) {
 	cm, err := clientset.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return cm.Data, nil
-}
-
-func parseRepositoryMaps(data string) (map[string]string, error) {
-	var result map[string]string
-	err := json.Unmarshal([]byte(data), &result)
-	if err != nil {
-		return nil, err
+	configData := make(map[string]map[string]string)
+	for key, jsonStr := range cm.Data {
+		var result map[string]string
+		if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+			return nil, fmt.Errorf("error parsing ConfigMap key %s: %v", key, err)
+		}
+		configData[key] = result
 	}
-	return result, nil
+	return configData, nil
 }
 
 func main() {
@@ -61,26 +60,14 @@ func main() {
 		return
 	}
 
-	repositoryMapGithub, err := parseRepositoryMaps(repoConfig["github_search"])
-	if err != nil {
-		fmt.Println("Failed to parse GitHub repositories:", err)
-		return
-	}
-
-	repositoryMapElastic, err := parseRepositoryMaps(repoConfig["elastic_search"])
-	if err != nil {
-		fmt.Println("Failed to parse Elastic repositories:", err)
-		return
-	}
-
 	for {
-		softwares, err := GetPodInfo(repositoryMapGithub)
+		softwares, err := GetPodInfo(repoConfig["github_search"], repoConfig["elastic_search"])
 		if err != nil {
 			fmt.Printf("Error fetching pod information: %v\n", err)
 			continue
 		}
 
-		UpdateSoftwareVersions(softwares, repositoryMapGithub, repositoryMapElastic)
+		UpdateSoftwareVersions(softwares, repoConfig["github_search"], repoConfig["elastic_search"])
 		PrintResults(softwares)
 		time.Sleep(3600 * time.Second)
 	}
