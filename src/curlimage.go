@@ -48,8 +48,6 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("DEBUG: Raw JSON response:", string(body))
-
 	var releases []map[string]interface{}
 	err = json.Unmarshal(body, &releases)
 	if err != nil {
@@ -70,15 +68,7 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 	return "", fmt.Errorf("no suitable release found for %s", repo)
 }
 
-func FetchLatestVersionElastic(repoKey string) (string, error) {
-	basePath := "https://www.docker.elastic.co/r/"
-	repoPath, exists := repositoryMapElastic[repoKey]
-	if !exists {
-		return "", fmt.Errorf("repository key not found for %s", repoKey)
-	}
-
-	url := basePath + repoPath
-
+func FetchLatestVersionElastic(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -90,9 +80,7 @@ func FetchLatestVersionElastic(repoKey string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("DEBUG: Raw Response Body:", string(body))
-
-	re := regexp.MustCompile(repoKey + `:([0-9]+\.[0-9]+\.[0-9]+)`)
+	re := regexp.MustCompile(`:([0-9]+\.[0-9]+\.[0-9]+)`)
 	matches := re.FindAllStringSubmatch(string(body), -1)
 
 	var versions []string
@@ -118,10 +106,11 @@ func UpdateSoftwareVersions(softwares map[string]*Software) {
 		var version string
 		var err error
 
-		if _, exists := repositoryMapGithub[name]; exists {
-			version, err = FetchLatestVersionGithub(name)
-		} else if _, exists := repositoryMapElastic[name]; exists {
-			version, err = FetchLatestVersionElastic(name)
+		if repo, exists := repositoryMapGithub[name]; exists {
+			version, err = FetchLatestVersionGithub(repo)
+		} else if repoPath, exists := repositoryMapElastic[name]; exists {
+			url := fmt.Sprintf("https://www.docker.elastic.co/r/%s", repoPath)
+			version, err = FetchLatestVersionElastic(url)
 		} else {
 			fmt.Printf("Repository not found for software: %s\n", name)
 			continue
