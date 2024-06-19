@@ -88,7 +88,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	go func() {
 		log.Fatal(http.ListenAndServe(":9191", nil))
 	}()
