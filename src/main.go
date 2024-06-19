@@ -22,6 +22,8 @@ type Software struct {
 }
 
 var (
+	reg = prometheus.NewRegistry()
+
 	softwareInfo = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "software_info",
@@ -32,10 +34,12 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(softwareInfo)
+	reg.MustRegister(softwareInfo)
 }
 
 func PrintResults(softwares map[string]*Software) {
+	softwareInfo.Reset()
+
 	fmt.Println("Software found on the cluster:")
 	for _, software := range softwares {
 		if len(software.Repositories) > 0 {
