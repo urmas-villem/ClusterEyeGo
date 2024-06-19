@@ -83,7 +83,7 @@ func sanityCheckGithub() bool {
 	}
 
 	if message, exists := apiResponse["message"].(string); exists {
-		log.Printf("GitHub API Response: %s\n", message)
+		//log.Printf("GitHub API Response: %s\n", message)
 		if strings.Contains(message, "API rate limit exceeded") {
 			log.Println("GitHub API hourly limit reached, try again later.")
 			return true
