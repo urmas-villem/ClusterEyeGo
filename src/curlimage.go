@@ -10,31 +10,6 @@ import (
 	"strings"
 )
 
-var repositoryMapGithub = map[string]string{
-	"argocd":                  "argoproj/argo-cd",
-	"harbor":                  "goharbor/harbor",
-	"istio":                   "istio/istio",
-	"kiali":                   "kiali/kiali",
-	"kube-state-metrics":      "kubernetes/kube-state-metrics",
-	"sealed-secrets":          "bitnami-labs/sealed-secrets",
-	"alertmanager":            "prometheus/alertmanager",
-	"blackbox_exporter":       "prometheus/blackbox_exporter",
-	"kafka_exporter":          "danielqsj/kafka_exporter",
-	"loki":                    "grafana/loki",
-	"mimir":                   "grafana/mimir",
-	"node_exporter":           "prometheus/node_exporter",
-	"opensearch-dashboards":   "opensearch-project/OpenSearch-Dashboards",
-	"opentelemetry-collector": "open-telemetry/opentelemetry-collector-contrib",
-	"prometheus":              "prometheus/prometheus",
-	"tempo":                   "grafana/tempo",
-	"jenkins":                 "jenkinsci/jenkins",
-}
-
-var repositoryMapElastic = map[string]string{
-	"filebeat": "beats/filebeat",
-	"logstash": "logstash/logstash-oss",
-}
-
 func FetchLatestVersionGithub(repo string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", repo)
 	resp, err := http.Get(url)
@@ -103,7 +78,7 @@ func FetchLatestVersionElastic(repo string) (string, error) {
 	return versions[0], nil
 }
 
-func UpdateSoftwareVersions(softwares map[string]*Software) {
+func UpdateSoftwareVersions(softwares map[string]*Software, repositoryMapGithub, repositoryMapElastic map[string]string) {
 	for name, software := range softwares {
 		var version string
 		var err error

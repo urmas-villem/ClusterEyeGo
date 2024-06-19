@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clustereye-config
+  namespace: default
+data:
+  github_search: |
+    {
+      "argocd": "argoproj/argo-cd",
+      "harbor": "goharbor/harbor",
+      "istio": "istio/istio",
+      "kiali": "kiali/kiali",
+      "kube-state-metrics": "kubernetes/kube-state-metrics",
+      "sealed-secrets": "bitnami-labs/sealed-secrets",
+      "alertmanager": "prometheus/alertmanager",
+      "blackbox_exporter": "prometheus/blackbox_exporter",
+      "kafka_exporter": "danielqsj/kafka_exporter",
+      "loki": "grafana/loki",
+      "mimir": "grafana/mimir",
+      "node_exporter": "prometheus/node_exporter",
+      "opensearch-dashboards": "opensearch-project/OpenSearch-Dashboards",
+      "opentelemetry-collector": "open-telemetry/opentelemetry-collector-contrib",
+      "prometheus": "prometheus/prometheus",
+      "tempo": "grafana/tempo",
+      "jenkins": "jenkinsci/jenkins"
+    }
+  elastic_search: |
+    {
+      "filebeat": "beats/filebeat",
+      "logstash": "logstash/logstash-oss"
+    }

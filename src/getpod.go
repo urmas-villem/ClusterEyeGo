@@ -10,9 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-var softwareFilters = []string{"argocd", "jenkins", "prometheus", "alertmanager", "clustereye", "logstash"}
-
-func GetPodInfo() (map[string]*Software, error) {
+func GetPodInfo(configMap map[string]string) (map[string]*Software, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -28,12 +26,12 @@ func GetPodInfo() (map[string]*Software, error) {
 	}
 
 	softwares := make(map[string]*Software)
-	for _, filter := range softwareFilters {
+	for filter, _ := range configMap {
 		softwares[filter] = &Software{Name: filter, Repositories: make(map[string]string)}
 	}
 
 	for _, pod := range pods.Items {
-		for _, filter := range softwareFilters {
+		for filter, _ := range configMap {
 			if strings.Contains(pod.Name, filter) {
 				for _, container := range pod.Spec.Containers {
 					if strings.Contains(container.Image, filter) {
