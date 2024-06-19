@@ -18,12 +18,22 @@ type Software struct {
 }
 
 func PrintResults(softwares map[string]*Software) {
+	fmt.Println("Software found on the cluster:")
 	for _, software := range softwares {
-		fmt.Printf("%s:\n", software.Name)
-		for repo, currentVersion := range software.Repositories {
-			fmt.Printf("  repository: %s\n", repo)
-			fmt.Printf("  current-version: %s\n", currentVersion)
-			fmt.Printf("  latest-version: %s\n", software.LatestVersion)
+		if len(software.Repositories) > 0 {
+			fmt.Printf("%s:\n", software.Name)
+			for repo, currentVersion := range software.Repositories {
+				fmt.Printf("  repository: %s\n", repo)
+				fmt.Printf("  current-version: %s\n", currentVersion)
+				fmt.Printf("  latest-version: %s\n", software.LatestVersion)
+			}
+		}
+	}
+
+	fmt.Println("\nSoftware not found on the cluster:")
+	for _, software := range softwares {
+		if len(software.Repositories) == 0 {
+			fmt.Printf("%s:\n", software.Name)
 		}
 	}
 }
