@@ -106,10 +106,13 @@ func UpdateSoftwareVersions(softwares map[string]*Software) {
 		var version string
 		var err error
 
+		fmt.Println("Checking software:", name)
+
 		if repo, exists := repositoryMapGithub[name]; exists {
 			version, err = FetchLatestVersionGithub(repo)
 		} else if repoPath, exists := repositoryMapElastic[name]; exists {
 			url := fmt.Sprintf("https://www.docker.elastic.co/r/%s", repoPath)
+			fmt.Println("Fetching from Elastic at URL:", url)
 			version, err = FetchLatestVersionElastic(url)
 		} else {
 			fmt.Printf("Repository not found for software: %s\n", name)
