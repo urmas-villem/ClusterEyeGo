@@ -68,7 +68,9 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 	return "", fmt.Errorf("no suitable release found for %s", repo)
 }
 
-func FetchLatestVersionElastic(url string) (string, error) {
+func FetchLatestVersionElastic(repo string) (string, error) {
+	url := fmt.Sprintf("https://www.docker.elastic.co/r/%s", repo)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -106,14 +108,10 @@ func UpdateSoftwareVersions(softwares map[string]*Software) {
 		var version string
 		var err error
 
-		fmt.Println("Checking software:", name)
-
 		if repo, exists := repositoryMapGithub[name]; exists {
 			version, err = FetchLatestVersionGithub(repo)
-		} else if repoPath, exists := repositoryMapElastic[name]; exists {
-			url := fmt.Sprintf("https://www.docker.elastic.co/r/%s", repoPath)
-			fmt.Println("Fetching from Elastic at URL:", url)
-			version, err = FetchLatestVersionElastic(url)
+		} else if repo, exists := repositoryMapElastic[name]; exists {
+			version, err = FetchLatestVersionElastic(repo)
 		} else {
 			fmt.Printf("Repository not found for software: %s\n", name)
 			continue
