@@ -72,12 +72,12 @@ func FetchLatestVersionGithub(repo string) (string, error) {
 
 func FetchLatestVersionElastic(repoKey string) (string, error) {
 	basePath := "https://www.docker.elastic.co/r/"
-	repo, exists := repositoryMapElastic[repoKey]
+	repoPath, exists := repositoryMapElastic[repoKey]
 	if !exists {
 		return "", fmt.Errorf("repository key not found for %s", repoKey)
 	}
 
-	url := basePath + repo
+	url := basePath + repoPath
 
 	resp, err := http.Get(url)
 	if err != nil {
