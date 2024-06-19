@@ -16,9 +16,10 @@ import (
 )
 
 type Software struct {
-	Name           string
-	Repositories   map[string]string
-	LatestVersions []string
+	Name            string
+	Repositories    map[string]string
+	LatestVersions  []string
+	CurrentVersions []string
 }
 
 func PrintResults(softwares map[string]*Software, softwareInfo *prometheus.GaugeVec) {
@@ -30,9 +31,10 @@ func PrintResults(softwares map[string]*Software, softwareInfo *prometheus.Gauge
 			fmt.Printf("%s:\n", software.Name)
 			for repo, currentVersion := range software.Repositories {
 				fmt.Printf("  repository: %s\n", repo)
-				fmt.Printf("  versions: %v\n", strings.Join(software.LatestVersions, ", "))
-				for _, ver := range software.LatestVersions {
-					softwareInfo.WithLabelValues(software.Name, repo, currentVersion, ver).Set(1)
+				fmt.Printf("  current version: %s\n", currentVersion)
+				fmt.Printf("  latest versions: %v\n", strings.Join(software.LatestVersions, ", "))
+				for _, ver := range software.CurrentVersions {
+					softwareInfo.WithLabelValues(software.Name, repo, ver, strings.Join(software.LatestVersions, ", ")).Set(1)
 				}
 			}
 		}
